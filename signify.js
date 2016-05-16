@@ -86,7 +86,7 @@
 
             function init() {        
                 applyStyles(notification, publicAPI.styles);
-                notification.addEventListener('click', this.destroy.bind(this), false);
+                notification.addEventListener('click', publicAPI.destroy, false);
                 document.body.appendChild(notification);
                 if(publicAPI.duration !== 'pinned') {
                     setTimeout(function() {

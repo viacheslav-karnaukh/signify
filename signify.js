@@ -11,9 +11,9 @@
                 'primary': '#3F51B5',
                 'default': '#000000'
             };
-
+            
             var bgColor = type ? type in colors ? colors[type] : type : colors['default'];
-
+            
             var defaultStyles = {
                 position: 'fixed',
                 zIndex: '9999',
@@ -39,33 +39,45 @@
                 primary: '&#9670;',
             };
             
-            var styles = styles ? assign(defaultStyles, styles) : defaultStyles;
-
             var notification = (function(node) {
                 var contentNode = (function(inner) {
                     inner.innerHTML = (type in signs ? signs[type] + ' ' : '') + message;
-                        applyStyles(inner, {display: 'table-cell', verticalAlign: 'middle'});
+                    applyStyles(inner, {
+                        display: 'table-cell',
+                        verticalAlign: 'middle'
+                    });
                     return inner;
                 })(document.createElement('span'));
                 node.appendChild(contentNode);
                 return node;
             })(document.createElement('div'));
-
+            
             var publicAPI = {
                 init: init,
                 destroy: destroy,
-                styles: styles,
-                duration: duration || 3000
+                updateStyles: updateStyles,
+                setDuration: setDuration
             };
-
-            return publicAPI;
-
+            
+            duration = duration || 3000;
+            styles = styles ? assign(defaultStyles, styles) : defaultStyles;
+            
             function assign(target, source) {
                 return Object.keys(source).reduce(function(obj, key) {
                     return obj[key] = source[key], obj;
                 }, target);
             }
-
+            
+            function updateStyles(stylesToUpdate) {
+                assign(styles, stylesToUpdate);
+                return this;
+            }
+            
+            function setDuration(newDuration) {
+                duration = newDuration;
+                return this;
+            }
+            
             function hideSlowlyAndRemove(node) {
                 if (Number(node.style.opacity) > 0) {
                     node.style.opacity = Number(node.style.opacity) - 0.01 + '';
@@ -77,33 +89,37 @@
                     hideSlowlyAndRemove(node);
                 }, 17);
             }
-
+            
             function applyStyles(node, styles) {
                 Object.keys(styles).forEach(function(key) {
                     node.style[key] = styles[key];
                 });
             }
-
-            function init() {        
-                applyStyles(notification, publicAPI.styles);
-                notification.addEventListener('click', publicAPI.destroy, false);
+            
+            function init() {
+                applyStyles(notification, styles);
+                notification.addEventListener('click', destroy, false);
                 document.body.appendChild(notification);
-                if(publicAPI.duration !== 'pinned') {
+                if (duration !== 'pinned') {
                     setTimeout(function() {
                         hideSlowlyAndRemove(notification);
-                    }, publicAPI.duration);
-                }        
+                    }, duration);
+                }
+                return this;
             }
-
+            
             function destroy() {
                 hideSlowlyAndRemove(notification);
+                return this;
             }
+            
+            return publicAPI;
         };
     });
-})(typeof define === 'function' && define.amd ? define : function (factory) {
+})(typeof define === 'function' && define.amd ? define : function(factory) {
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = factory();
     } else {
-        window.Signify = factory();
-    }    
+        window.Notify = factory();
+    }
 });
